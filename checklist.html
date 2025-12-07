@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>芬蘭行前準備清單</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050816;
+      color: #f9fafb;
+    }
+    .wrapper {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+    h1 {
+      font-size: 1.3rem;
+      margin: 8px 0 4px;
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+    /* tab 切換 */
+    .tab-row {
+      display: flex;
+      overflow-x: auto;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: rgba(15,23,42,0.8);
+      color: #e5e7eb;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: #22c55e;
+      color: #022c22;
+      border-color: rgba(34,197,94,0.9);
+      font-weight: 600;
+    }
+    /* 新增輸入列 */
+    .add-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0 12px;
+    }
+    .add-input {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      font-size: 0.85rem;
+      background: rgba(15,23,42,0.9);
+      color: #f9fafb;
+    }
+    .add-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: #6366f1;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* 清單項目 */
+    .item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 14px;
+      background: rgba(15,23,42,0.9);
+      box-shadow: 0 1px 0 rgba(15,23,42,0.9);
+    }
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .item-text {
+      font-size: 0.9rem;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .item.done .item-text {
+      text-decoration: line-through;
+      color: #6b7280;
+    }
+    .delete-btn {
+      border: none;
+      background: none;
+      color: #9ca3af;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 2px;
+    }
+    .date-label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+    .hint {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <h1>行前準備清單</h1>
+    <div class="subtitle">
+      這份清單只會存到你的手機 / 電腦（localStorage），<br>
+      不會上傳任何個人資料到伺服器。
+    </div>
+
+    <!-- Tabs：Day 1~11 -->
+    <div class="tab-row" id="tabRow"></div>
+    <div class="date-label" id="dateLabel"></div>
+
+    <!-- 新增欄位 -->
+    <div class="add-row">
+      <input id="addInput" class="add-input" type="text"
+             placeholder="新增準備項目，例如：確認護照效期、換外幣…" />
+      <button class="add-btn" id="addBtn">＋</button>
+    </div>
+    <div class="hint">點選圈圈可勾選完成，右側「⋯」可刪除項目。</div>
+
+    <!-- 清單容器 -->
+    <div id="listContainer"></div>
+  </div>
+
+  <script>
+    // 這裡依照你的行程日期設定
+    const days = [
+      { id: 'day1',  label: '3/28', title: 'DAY 1｜3/28 SAT' },
+      { id: 'day2',  label: '3/29', title: 'DAY 2｜3/29 SUN' },
+      { id: 'day3',  label: '3/30', title: 'DAY 3｜3/30 MON' },
+      { id: 'day4',  label: '3/31', title: 'DAY 4｜3/31 TUE' },
+      { id: 'day5',  label: '4/1',  title: 'DAY 5｜4/1 WED' },
+      { id: 'day6',  label: '4/2',  title: 'DAY 6｜4/2 THU' },
+      { id: 'day7',  label: '4/3',  title: 'DAY 7｜4/3 FRI' },
+      { id: 'day8',  label: '4/4',  title: 'DAY 8｜4/4 SAT' },
+      { id: 'day9',  label: '4/5',  title: 'DAY 9｜4/5 SUN' },
+      { id: 'day10', label: '4/6',  title: 'DAY 10｜4/6 MON' },
+      { id: 'day11', label: '4/7',  title: 'DAY 11｜4/7 TUE' }
+    ];
+
+    const STORAGE_KEY = 'finland_checklist_v1';
+
+    const tabRow = document.getElementById('tabRow');
+    const dateLabel = document.getElementById('dateLabel');
+    const listContainer = document.getElementById('listContainer');
+    const addInput = document.getElementById('addInput');
+    const addBtn = document.getElementById('addBtn');
+
+    let state = loadState();
+    let currentDayId = state.currentDayId || days[0].id;
+
+    // 讀取 localStorage
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { itemsByDay: {} };
+        return JSON.parse(raw);
+      } catch {
+        return { itemsByDay: {} };
+      }
+    }
+
+    // 寫入 localStorage
+    function saveState() {
+      state.currentDayId = currentDayId;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    // 依照 state 渲染 tabs & 清單
+    function renderTabs() {
+      tabRow.innerHTML = '';
+      days.forEach(d => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn' + (d.id === currentDayId ? ' active' : '');
+        btn.textContent = d.label;
+        btn.onclick = () => {
+          currentDayId = d.id;
+          saveState();
+          renderAll();
+        };
+        tabRow.appendChild(btn);
+      });
+      const current = days.find(d => d.id === currentDayId);
+      dateLabel.textContent = current ? current.title : '';
+    }
+
+    function renderList() {
+      const items = (state.itemsByDay[currentDayId] || []);
+      listContainer.innerHTML = '';
+
+      items.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'item' + (item.done ? ' done' : '');
+
+        const left = document.createElement('div');
+        left.className = 'item-left';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = item.done;
+        checkbox.onchange = () => {
+          item.done = checkbox.checked;
+          saveState();
+          renderList();
+        };
+
+        const text = document.createElement('div');
+        text.className = 'item-text';
+        text.textContent = item.text;
+
+        left.appendChild(checkbox);
+        left.appendChild(text);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.textContent = '⋯';
+        delBtn.title = '刪除';
+        delBtn.onclick = () => {
+          if (confirm('要刪除這個項目嗎？')) {
+            state.itemsByDay[currentDayId].splice(index, 1);
+            saveState();
+            renderList();
+          }
+        };
+
+        div.appendChild(left);
+        div.appendChild(delBtn);
+        listContainer.appendChild(div);
+      });
+    }
+
+    function renderAll() {
+      renderTabs();
+      renderList();
+    }
+
+    // 新增項目
+    function addItem() {
+      const text = addInput.value.trim();
+      if (!text) return;
+      if (!state.itemsByDay[currentDayId]) {
+        state.itemsByDay[currentDayId] = [];
+      }
+      state.itemsByDay[currentDayId].push({ text, done: false });
+      addInput.value = '';
+      saveState();
+      renderList();
+    }
+
+    addBtn.addEventListener('click', addItem);
+    addInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addItem();
+      }
+    });
+
+    // 初始化
+    renderAll();
+  </script>
+</body>
+</html>
